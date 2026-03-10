@@ -216,3 +216,13 @@ with tab6:
     )
 
     st.bar_chart(pred)
+
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+"Dataset",
+"Market Basket Analysis",
+"Visualization",
+"Rule Explorer",
+"Recommendations",
+"Customer Segmentation",
+"Sequential Patterns"
+])
