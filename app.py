@@ -16,225 +16,202 @@ st.set_page_config(layout="wide")
 
 st.title("Retail Analytics & Market Basket Intelligence Lab")
 
-# ------------------------------
-# Sidebar Controls
-# ------------------------------
+# -------------------------------------------------
+# SESSION STATE (prevents data reset)
+# -------------------------------------------------
 
-st.sidebar.header("Model Parameters")
+if "data" not in st.session_state:
+    st.session_state.data = None
 
-support = st.sidebar.slider(
-    "Minimum Support",
-    0.01,
-    0.5,
-    0.05
-)
+# -------------------------------------------------
+# SIDEBAR
+# -------------------------------------------------
 
-confidence = st.sidebar.slider(
-    "Minimum Confidence",
-    0.1,
-    1.0,
-    0.3
-)
+st.sidebar.header("Controls")
 
-file = st.sidebar.file_uploader(
-    "Upload Retail Dataset"
-)
+support = st.sidebar.slider("Minimum Support",0.01,0.5,0.05)
 
-generate = st.sidebar.button(
-    "Generate Synthetic Dataset"
-)
+confidence = st.sidebar.slider("Minimum Confidence",0.1,1.0,0.3)
 
-# ------------------------------
-# Load Dataset
-# ------------------------------
+uploaded_file = st.sidebar.file_uploader("Upload Retail Dataset")
 
-if file:
+generate_data = st.sidebar.button("Generate Synthetic Dataset")
 
-    df = pd.read_csv(file)
+reset = st.sidebar.button("Reset Data")
 
-elif generate:
+# Reset
+if reset:
+    st.session_state.data = None
 
-    df = generate_dataset()
+# Upload
+if uploaded_file:
+    st.session_state.data = pd.read_csv(uploaded_file)
 
-else:
+# Generate
+if generate_data:
+    st.session_state.data = generate_dataset()
 
-    st.info("Upload a dataset or generate synthetic data.")
+# Stop if no data
+if st.session_state.data is None:
+    st.info("Upload a dataset or generate synthetic data from sidebar.")
     st.stop()
 
-# ------------------------------
-# Dataset Preview
-# ------------------------------
+df = st.session_state.data
 
-st.header("Dataset Preview")
+# -------------------------------------------------
+# TABS
+# -------------------------------------------------
 
-st.dataframe(df.head())
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+"Dataset",
+"Market Basket Analysis",
+"Visualization",
+"Recommendations",
+"Customer Segmentation",
+"Sequential Patterns"
+])
 
-# ------------------------------
-# Market Basket Analysis
-# ------------------------------
+# -------------------------------------------------
+# DATASET TAB
+# -------------------------------------------------
 
-st.header("Market Basket Analysis")
+with tab1:
+
+    st.header("Dataset Preview")
+
+    st.dataframe(df.head())
+
+    st.write("Dataset Size:", df.shape)
+
+# -------------------------------------------------
+# MARKET BASKET ANALYSIS
+# -------------------------------------------------
 
 basket = create_basket(df)
 
-rules = run_mba(
-    basket,
-    support,
-    confidence
-)
+rules = run_mba(basket,support,confidence)
 
-# Convert frozenset to string (important for Plotly)
+# Convert frozensets for plotting
+rules["antecedents"] = rules["antecedents"].apply(lambda x:", ".join(list(x)))
+rules["consequents"] = rules["consequents"].apply(lambda x:", ".join(list(x)))
 
-rules["antecedents"] = rules["antecedents"].apply(
-    lambda x: ", ".join(list(x))
-)
+# -------------------------------------------------
+# MBA TAB
+# -------------------------------------------------
 
-rules["consequents"] = rules["consequents"].apply(
-    lambda x: ", ".join(list(x))
-)
+with tab2:
 
-if rules.empty:
+    st.header("Association Rules")
 
-    st.warning(
-        "No rules generated. Try lowering support or confidence."
-    )
+    if rules.empty:
 
-else:
+        st.warning("No rules generated. Reduce support or confidence.")
 
-    st.subheader("Association Rules")
+    else:
 
-    st.dataframe(rules)
+        st.dataframe(rules)
 
-# ------------------------------
-# Rule Visualization
-# ------------------------------
+# -------------------------------------------------
+# VISUALIZATION TAB
+# -------------------------------------------------
 
-if not rules.empty:
+with tab3:
 
-    st.header("Rule Visualization Dashboard")
+    st.header("Rule Dashboard")
 
-    fig = plot_rule_scatter(rules)
+    if not rules.empty:
 
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
+        st.plotly_chart(
+            plot_rule_scatter(rules),
+            use_container_width=True
+        )
 
-# ------------------------------
-# 3D Rule Visualization
-# ------------------------------
+        st.header("3D Rule Visualization")
 
-if not rules.empty:
+        st.plotly_chart(
+            plot_3d_rules(rules),
+            use_container_width=True
+        )
 
-    st.header("3D Rule Visualization")
+        st.header("Product Association Network")
 
-    fig3 = plot_3d_rules(rules)
+        st.plotly_chart(
+            build_network(rules),
+            use_container_width=True
+        )
 
-    st.plotly_chart(
-        fig3,
-        use_container_width=True
-    )
+# -------------------------------------------------
+# RECOMMENDATION TAB
+# -------------------------------------------------
 
-# ------------------------------
-# Recommendation Engine
-# ------------------------------
-
-if not rules.empty:
+with tab4:
 
     st.header("Product Recommendation Engine")
 
-    product_list = list(basket.columns)
+    if not rules.empty:
 
-    product = st.selectbox(
+        product = st.selectbox(
+            "Select Product",
+            basket.columns
+        )
+
+        rec = recommend_products(product,rules)
+
+        st.dataframe(rec)
+
+        st.header("Retail Insights")
+
+        insights = generate_insights(rules)
+
+        for i in insights:
+            st.write(i)
+
+        st.header("Store Layout Optimization")
+
+        layout = optimize_layout(rules)
+
+        for l in layout:
+            st.write(l)
+
+# -------------------------------------------------
+# CUSTOMER SEGMENTATION
+# -------------------------------------------------
+
+with tab5:
+
+    st.header("Customer Segmentation")
+
+    customer_matrix = (
+        df.groupby(['CustomerID','Item'])['Item']
+        .count()
+        .unstack()
+        .fillna(0)
+    )
+
+    segmented = run_segmentation(customer_matrix)
+
+    st.subheader("Segment Distribution")
+
+    st.bar_chart(
+        segmented["Segment"].value_counts()
+    )
+
+# -------------------------------------------------
+# SEQUENTIAL PATTERN TAB
+# -------------------------------------------------
+
+with tab6:
+
+    st.header("Sequential Pattern Prediction")
+
+    product_seq = st.selectbox(
         "Select Product",
-        product_list
+        df["Item"].unique()
     )
 
-    recommendations = recommend_products(
-        product,
-        rules
+    pred = next_product_prediction(
+        df,
+        product_seq
     )
 
-    st.dataframe(recommendations)
-
-# ------------------------------
-# Insight Generator
-# ------------------------------
-
-if not rules.empty:
-
-    st.header("Retail Insights")
-
-    insights = generate_insights(rules)
-
-    for insight in insights:
-
-        st.write(insight)
-
-# ------------------------------
-# Network Graph
-# ------------------------------
-
-if not rules.empty:
-
-    st.header("Product Association Network")
-
-    fig_net = build_network(rules)
-
-    st.plotly_chart(
-        fig_net,
-        use_container_width=True
-    )
-
-# ------------------------------
-# Sequential Pattern Prediction
-# ------------------------------
-
-st.header("Sequential Pattern Prediction")
-
-product_seq = st.selectbox(
-    "Select Product for Sequential Prediction",
-    df["Item"].unique()
-)
-
-prediction = next_product_prediction(
-    df,
-    product_seq
-)
-
-st.bar_chart(prediction)
-
-# ------------------------------
-# Customer Segmentation
-# ------------------------------
-
-st.header("Customer Segmentation")
-
-customer_matrix = (
-    df.groupby(['CustomerID','Item'])['Item']
-    .count()
-    .unstack()
-    .fillna(0)
-)
-
-segmented = run_segmentation(customer_matrix)
-
-st.subheader("Segment Distribution")
-
-st.bar_chart(
-    segmented["Segment"].value_counts()
-)
-
-# ------------------------------
-# Store Layout Optimizer
-# ------------------------------
-
-if not rules.empty:
-
-    st.header("Retail Store Layout Optimization")
-
-    layout = optimize_layout(rules)
-
-    for rec in layout:
-
-        st.write(rec)
+    st.bar_chart(pred)
