@@ -10,7 +10,7 @@ Original file is located at
 import pandas as pd
 import random
 
-def generate_dataset(n_transactions=50000):
+def generate_dataset(n_transactions=5000):
 
     products = [
         "Milk","Bread","Butter","Eggs","Beer",
