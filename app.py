@@ -218,8 +218,10 @@ with tab6:
     st.bar_chart(pred)
 
 
-
-with tab4:
+tab7 = st.tabs([
+"Rule Explorer",
+])
+with tab7:
 
     st.header("Association Rule Explorer")
 
