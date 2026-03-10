@@ -12,7 +12,7 @@ from modules.sequential_patterns import next_product_prediction
 from modules.layout_optimizer import optimize_layout
 from modules.segmentation import run_segmentation
 from modules.rule_explorer import rule_3d_plot, interpret_rule
-
+from modules.rule_explorer import filter_rules, interpret_rule
 st.set_page_config(layout="wide")
 
 st.title("Retail Analytics & Market Basket Intelligence Lab")
