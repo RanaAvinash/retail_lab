@@ -226,3 +226,58 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
 "Customer Segmentation",
 "Sequential Patterns"
 ])
+
+with tab4:
+
+    st.header("Association Rule Explorer")
+
+    min_lift = st.slider(
+        "Minimum Lift",
+        1.0,
+        5.0,
+        1.2
+    )
+
+    min_conf = st.slider(
+        "Minimum Confidence",
+        0.0,
+        1.0,
+        0.3
+    )
+
+    min_support = st.slider(
+        "Minimum Support",
+        0.0,
+        0.5,
+        0.02
+    )
+
+    filtered_rules = filter_rules(
+        rules,
+        min_lift,
+        min_conf,
+        min_support
+    )
+
+    st.write("Filtered Rules")
+
+    st.dataframe(filtered_rules)
+
+    st.subheader("Rule Interpretation")
+
+    if not filtered_rules.empty:
+
+        selected_index = st.selectbox(
+            "Select Rule",
+            filtered_rules.index
+        )
+
+        selected_rule = filtered_rules.loc[selected_index]
+
+        explanation = interpret_rule(selected_rule)
+
+        st.markdown(explanation)
+
+    else:
+
+        st.warning("No rules match the filters.")
