@@ -44,10 +44,19 @@ st.dataframe(df.head())
 basket = create_basket(df)
 
 rules = run_mba(basket, support, confidence)
+def prepare_rules(rules):
 
-# Convert frozensets to strings for visualization
-rules["antecedents"] = rules["antecedents"].apply(lambda x: ", ".join(list(x)))
-rules["consequents"] = rules["consequents"].apply(lambda x: ", ".join(list(x)))
+    rules = rules.copy()
+
+    rules["antecedents"] = rules["antecedents"].apply(lambda x: ", ".join(list(x)))
+    rules["consequents"] = rules["consequents"].apply(lambda x: ", ".join(list(x)))
+
+    return rules
+
+rules = prepare_rules(rules)
+if rules.empty:
+    st.warning("No rules found. Try lowering support or confidence.")
+    st.stop()
 
 st.subheader("Association Rules")
 st.dataframe(rules)
