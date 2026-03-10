@@ -11,6 +11,7 @@ from modules.network_graph import build_network
 from modules.sequential_patterns import next_product_prediction
 from modules.layout_optimizer import optimize_layout
 from modules.segmentation import run_segmentation
+from modules.rule_explorer import rule_3d_plot, interpret_rule
 
 st.set_page_config(layout="wide")
 
