@@ -22,7 +22,7 @@ def generate_dataset(n_transactions=5000):
 
     for t in range(n_transactions):
 
-        items = random.sample(products, random.randint(2,5))
+        items = random.sample(products, random.randint(2,10))
         customer = random.randint(1000,2000)
 
         for item in items:
