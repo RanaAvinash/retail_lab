@@ -217,10 +217,13 @@ with tab6:
 
     st.bar_chart(pred)
 
-tab1 = st.tabs([
-"Rule Explorer"
+tab4, tab5, tab6, tab7 = st.tabs([
+"Rule Explorer",
+"Recommendations",
+"Customer Segmentation",
+"Sequential Patterns"
 ])
-with tab1:
+with tab4:
 
     st.header("Association Rule Explorer")
 
