@@ -218,7 +218,7 @@ with tab6:
     st.bar_chart(pred)
 
 
-tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
 "Rule Explorer"
 ])
 with tab4:
