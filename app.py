@@ -43,7 +43,11 @@ st.dataframe(df.head())
 
 basket = create_basket(df)
 
-rules = run_mba(basket,support,confidence)
+rules = run_mba(basket, support, confidence)
+
+# Convert frozensets to strings for visualization
+rules["antecedents"] = rules["antecedents"].apply(lambda x: ", ".join(list(x)))
+rules["consequents"] = rules["consequents"].apply(lambda x: ", ".join(list(x)))
 
 st.subheader("Association Rules")
 st.dataframe(rules)
